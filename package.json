@@ -1,0 +1,10 @@
+{
+  "name": "assur-caravan",
+  "version": "2.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "audit": "node tools/balance-audit.mjs"
+  }
+}
