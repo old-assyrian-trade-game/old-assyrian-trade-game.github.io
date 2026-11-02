@@ -1,8 +1,8 @@
 {
-  "scenario_id": "YATS-WEB-2.3.0",
+  "scenario_id": "YATS-WEB-2.3.1",
   "student_sections": 19,
   "scope": "Website and in-game instructions only; earlier Word handouts have not been revised.",
-  "rules_sha256": "2b9435bd9276582f9bbe238582428863370a346346164a2d119db3f1ae835bc1",
-  "engine_sha256": "4148d0aa196251e1d13dce6181ce679149e59f0a05d6b522812fa4212cd90171",
-  "guide_sha256": "602bf90fe527b411fc3de888581b09b4a47bd3775899ea71d2cb8ecd017e4dd6"
+  "rules_sha256": "a448a10a676c1123a0f52b1864058ce005e0418b64164e5e9f3c0e0f8d459f11",
+  "engine_sha256": "0b178f9ca21b17ea694e72505b4b8222df6096ac85a0d2bc4ad8c7c1fed93ae0",
+  "guide_sha256": "4ae3aae361b5bd103193cc43dff80eb8d05d64a4ed499fd4f5088a7f6d9d0b93"
 }
