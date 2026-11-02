@@ -22,7 +22,7 @@ export class Game {
       journey:null,event:null,finished:false,jailed:false,result:null,log:[],ledger:[],
       epoch:'',quotes:{},source:{},donkeyPeriod:-1,donkeyStock:0,
       fineStock:m.fine_restock_loads*r.goods.fine_textile.units_per_donkey,
-      nextFine:this.roll(m.fine_restock_dice)*m.fine_restock_days_per_roll,ironStock:0,ironPurchases:0,
+      nextFine:this.roll(m.fine_restock_dice)*m.fine_restock_days_per_roll,ironStock:0,ironOffers:0,
       tinChange:m.tin_change_day_base+this.integer(-m.tin_change_day_spread,m.tin_change_day_spread),wool:[],transfers:[]};
     this.refreshMarkets();
     this.note('Game begins',`${this.s.team} receives an interest-free loan of ${r.starting_silver} shekels of silver. Caravans must arrive by day ${close}; final accounting is on day ${this.s.deadline}.`);
@@ -58,7 +58,7 @@ export class Game {
   }
   // Public mutation entry point. Invalid actions restore money, time AND random state.
   act(action,...args) {
-    const allowed=['buy','sell','discard','rent','start','advance','resolve','lodging','roadSell','deposit','withdraw','repay','remit','buyWool','finish'];
+    const allowed=['buy','sell','discard','declineIron','rent','start','advance','resolve','lodging','roadSell','deposit','withdraw','repay','remit','buyWool','finish'];
     requireThat(allowed.includes(action),'Unknown action.');
     const previous=this.snapshot();
     try { this[action](...args);this.checkInvariants(); }
@@ -110,7 +110,7 @@ export class Game {
   stock(key) {
     if(key==='donkey')return this.s.city==='assur'?this.s.donkeyStock:Infinity;
     if(key==='fine_textile'&&this.s.city==='assur')return this.s.fineStock;
-    if(key==='iron')return this.s.city==='euphrates'&&this.s.ironPurchases<this.rules.markets.iron_purchase_limit?this.s.ironStock:0;
+    if(key==='iron')return this.s.city==='euphrates'&&!this.s.journey&&this.s.ironOffers>0&&this.s.ironOffers<=this.rules.markets.iron_offer_limit?this.s.ironStock:0;
     return this.quote(key).buy===null?0:Infinity;
   }
   wagonCapacity(wagon=this.s.wagon) { return wagon?this.rules.wagons[wagon].capacity_minas:0; }
@@ -138,16 +138,15 @@ export class Game {
   }
   buy(key,qty) {
     this.active(true);qty=this.tradeAmount(key,qty);const q=this.quote(key);
-    if(key==='iron')requireThat(this.s.ironPurchases<this.rules.markets.iron_purchase_limit,'You have reached the iron purchase limit for this season.');
+    if(key==='iron')requireThat(this.stock('iron')>0,'No iron offer is available. You can receive at most two offers per trading season.');
     requireThat(q.buy!==null,'No seller offers this here.');requireThat(qty<=this.stock(key)+EPS,'The market does not have that much stock.');
     requireThat(key==='donkey'||this.load({[key]:qty})<=this.s.donkeys+EPS,'Buy more transport or reduce this purchase.');
     this.pay(qty*q.buy,'Purchase',`${qty} ${key}`);
     if(key==='donkey'){this.s.donkeys+=qty;if(this.s.city==='assur')this.s.donkeyStock-=qty;}
     else {const l=this.s.inventory[key];l.qty+=qty;l.basis+=qty*q.buy;if(this.s.city==='kanes')l.cleared+=qty;
       if(key==='fine_textile'&&this.s.city==='assur')this.s.fineStock-=qty;
-      // Count completed purchases, not offers. Selling or losing the cargo does
-      // not restore the allowance; the counter is part of every saved game.
-      if(key==='iron'){this.s.ironPurchases++;this.s.ironStock-=qty;}}
+      // The opportunity was counted when the offer appeared, before this trade.
+      if(key==='iron')this.s.ironStock-=qty;}
     this.note('Goods purchased',`Bought ${qty} ${key==='donkey'?'donkeys':this.rules.goods[key].name} for ${(qty*q.buy).toFixed(2)} silver.`);
   }
   remove(key,qty) {
@@ -164,6 +163,12 @@ export class Game {
     this.note('Sale completed',`Sold ${qty} ${key==='donkey'?'donkeys':this.rules.goods[key].name}; received ${(q.net*qty).toFixed(2)} silver after tax.`,'good');
   }
   discard(key,qty) { this.active(true);qty=this.tradeAmount(key,qty);requireThat(key!=='donkey'&&qty<=this.qty(key)+EPS,'Choose cargo that you own.');this.remove(key,qty);this.note('Cargo abandoned',`Left ${qty} ${this.rules.goods[key].name} behind.`,'warning'); }
+  declineIron() {
+    this.active(true);
+    requireThat(this.stock('iron')>0,'There is no iron offer to decline.');
+    this.s.ironStock=0;
+    this.note('Iron offer declined','You declined the iron offer. It still counts toward the two offers allowed this season and cannot be recovered.');
+  }
   rent(wagon) {
     this.active(true);requireThat(wagon===null||Object.hasOwn(this.rules.wagons,wagon),'Unknown wagon.');
     requireThat(wagon===null||this.s.city==='durhumit','Hire wagons in Durhumit.');
@@ -231,6 +236,8 @@ export class Game {
     this.pay(this.fees(id),'Road fees',road.name,true);
     this.s.journey={id,origin:this.s.city,destination,total:days,hazardDays:days,left:days,elapsed:0,pace,escort:!!escort,
       inspectionDay:this.integer(1,days),inspected:false,lodgeStock:0,lodgePrice:0,lodgeSell:0};
+    // An unaccepted offer expires on departure; revisiting cannot recover it.
+    this.s.ironStock=0;
     this.note('Departure',`Left ${this.name()} for ${this.name(destination)}. The planned journey is ${days} days, including any Kaneš clearance.`);
   }
   dailyAccounts() {
@@ -330,10 +337,11 @@ export class Game {
       this.pay(tax,'Customs','Kaneš clearance',true);this.note('Customs cleared',`Paid ${tax.toFixed(2)} silver. These goods keep their seals on later visits.`);
     }
     const m=this.rules.markets;
-    if(this.s.city==='euphrates'&&this.s.ironPurchases<m.iron_purchase_limit&&this.random()<m.iron_offer_chance){
+    if(this.s.city==='euphrates'&&this.s.ironOffers<m.iron_offer_limit&&this.random()<m.iron_offer_chance){
+      // Count every offer immediately, even if the player cannot or will not buy.
+      this.s.ironOffers++;
       this.s.ironStock=m.iron_offer_minas;
-      const remaining=m.iron_purchase_limit-this.s.ironPurchases;
-      this.note('A discreet offer',`A trader offers iron. You may buy iron at most ${remaining} more ${remaining===1?'time':'times'} this season. The cargo must take Smuggler’s Track to Durhumit.`,'warning');
+      this.note('A discreet offer',`A trader offers iron. This is offer ${this.s.ironOffers} of ${m.iron_offer_limit} for the entire season. It counts whether you buy or decline. Declining or leaving the crossing ends this offer. The cargo must take Smuggler’s Track to Durhumit.`,'warning');
     }
     this.note('Arrival',`Reached ${this.name()} on day ${this.s.day}. The market is open.`,'good');
   }
@@ -351,6 +359,7 @@ export class Game {
   closeBooks(reason) { this.s.result={...this.settlement(),reason,jailed:this.s.jailed};this.s.finished=true;this.s.event=null;this.note('Final accounting',reason,this.s.jailed?'danger':'good'); }
   snapshot() { return clone({format:'YATS-WEB',version:this.rules.version,seed:this.seed,randomState:this.randomState,rules:this.rules,state:this.s}); }
   static restore(data) {
+    if(data?.format==='YATS-WEB'&&data.version==='2.3.0')data=upgradeIronOffers(data);
     requireThat(data?.format==='YATS-WEB'&&data.version===RULES.version,'This save uses an earlier or different version of the rules. Start a new game to use the current rules.');
     // Rules are part of the save; this version accepts only this exact scenario.
     requireThat(JSON.stringify(data.rules)===JSON.stringify(RULES),'This save uses different scenario rules.');
@@ -375,8 +384,9 @@ export class Game {
     }
     for(const key of Object.keys(this.rules.goods))requireThat(finite(s.source?.[key],EPS),'Invalid reference price.');
     for(const key of ['donkeyStock','fineStock','ironStock','nextFine','tinChange','donkeyPeriod'])requireThat(Number.isInteger(s[key])&&s[key]>=0,'Invalid market stocks or dates.');
-    requireThat(Number.isInteger(s.ironPurchases)&&s.ironPurchases>=0&&s.ironPurchases<=this.rules.markets.iron_purchase_limit,'Invalid seasonal iron purchase count.');
+    requireThat(Number.isInteger(s.ironOffers)&&s.ironOffers>=0&&s.ironOffers<=this.rules.markets.iron_offer_limit,'Invalid seasonal iron offer count.');
     requireThat(s.ironStock<=this.rules.markets.iron_offer_minas,'Invalid iron offer.');
+    requireThat(!s.ironStock||(s.ironOffers>0&&s.city==='euphrates'&&!s.journey),'An iron offer must belong to the current visit to the Euphrates crossing.');
     for(const lot of s.wool)requireThat(finite(lot.cost,EPS)&&finite(lot.qty,EPS)&&typeof lot.sold==='boolean'&&(!lot.sold||finite(lot.proceeds)),'Invalid wool contract.');
     for(const l of s.log)requireThat(Number.isInteger(l.day)&&l.day>=0&&l.day<=s.day&&typeof l.title==='string'&&typeof l.text==='string'&&['info','good','warning','danger'].includes(l.kind),'Invalid journal.');
     for(const l of s.ledger)requireThat(Number.isInteger(l.day)&&finite(Math.abs(l.amount))&&typeof l.category==='string'&&typeof l.text==='string','Invalid ledger.');
@@ -386,4 +396,27 @@ export class Game {
       if(e.kind==='overload')requireThat(Number.isInteger(e.count)&&e.count>=0&&finite(e.price),'Invalid replacement offer.');}
     if(s.finished)requireThat(s.result&&['bank','purse','cargo','animals','principal','emergency','debt','unrecovered'].every(k=>finite(s.result[k]))&&Number.isFinite(s.result.profit)&&typeof s.result.reason==='string'&&typeof s.result.jailed==='boolean','Invalid final accounts.');
   }
+}
+
+// Version 2.3.0 recorded all offers in the journal but counted only purchases.
+// Upgrade that exact scenario without changing money, cargo, dates, or RNG.
+function upgradeIronOffers(data) {
+  const previousRules=clone(RULES);
+  previousRules.version='2.3.0';
+  previousRules.scenario_id='YATS-WEB-2.3.0';
+  previousRules.markets=Object.fromEntries(Object.entries(previousRules.markets).map(([key,value])=>[key==='iron_offer_limit'?'iron_purchase_limit':key,value]));
+  previousRules.goods.iron.description='Occasionally offered at the Euphrates crossing. You may buy iron at most twice per season. It may travel only on Smuggler’s Track.';
+  requireThat(JSON.stringify(data.rules)===JSON.stringify(previousRules),'This save uses different scenario rules.');
+  const saved=clone(data),s=saved.state;
+  requireThat(s&&Array.isArray(s.log),'Damaged game records.');
+  const offers=s.log.filter(entry=>entry?.title==='A discreet offer').length;
+  requireThat(Number.isInteger(s.ironPurchases)&&s.ironPurchases>=0&&s.ironPurchases<=previousRules.markets.iron_purchase_limit&&s.ironPurchases<=offers,'Invalid seasonal iron purchase count.');
+  s.ironOffers=Math.min(offers,RULES.markets.iron_offer_limit);
+  delete s.ironPurchases;
+  // More than two old offers, or an offer already left behind, cannot stay open.
+  if(offers>RULES.markets.iron_offer_limit||s.journey||s.city!=='euphrates')s.ironStock=0;
+  saved.version=RULES.version;
+  saved.rules=clone(RULES);
+  s.log.push({day:s.day,title:'Iron offer rule updated',text:'Iron is now offered at most twice per season. Your earlier offers count toward this limit, whether or not you bought the iron.',kind:'info'});
+  return saved;
 }
