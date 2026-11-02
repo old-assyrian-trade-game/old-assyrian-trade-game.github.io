@@ -28,14 +28,17 @@ Run `npm run audit` to reproduce the cargo-strategy comparison.
 The GitHub Actions workflow runs the tests and publishes `dist/` only after
 they pass. In Settings → Pages, select GitHub Actions as the publishing source.
 
-## Release 2.3.0
+## Release 2.3.1
 
 - A 7,200-shekel interest-free starting loan.
-- At most two successful iron purchases at the Euphrates per season. Declined
-  offers do not count; selling, discarding, or losing iron does not reset the limit.
+- At most two iron offers at the Euphrates per season, with no guarantee of any
+  offer. Each offer counts immediately, whether accepted or declined. Declining
+  or departing ends that offer; waiting cannot restore it.
+- Version 2.3.0 saves upgrade automatically, counting earlier offers recorded in
+  the journal. Money, cargo, dates and the random state are preserved.
 - Revised prices and higher typical textile margins.
 - An editable About page with space for introduction, credits, and contact.
-- 72 behavioral tests, including 300 seasons with normal risks and 2,400
+- Behavioral tests, including 300 seasons with normal risks and 2,400
   controlled price-comparison ventures.
 
 The map and numerical rules are classroom abstractions. No claim is made to
