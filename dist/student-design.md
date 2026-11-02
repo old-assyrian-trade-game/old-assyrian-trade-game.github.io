@@ -1,6 +1,6 @@
 # The Assur Caravan — How to play
 
-Scenario YATS-WEB-2.3.0.
+Scenario YATS-WEB-2.3.1.
 
 ## The objective
 
@@ -56,7 +56,7 @@ Copper is available in Durhumit and sells for more in Purušhaddum. A small wago
 
 ## Iron
 
-A trader at the Euphrates crossing occasionally offers a small quantity of iron. You can sell it at a higher price in Durhumit, but it may travel only on Smuggler’s Track. Sell or discard it before taking a legal road. You may buy iron at most twice during the entire trading season. Each successful purchase counts, even if you later sell, discard, or lose the iron. Declining an offer does not use your allowance. Each visit to the crossing produces at most one offer; waiting or reopening the market does not create another. There is one patrol check per journey on Smuggler’s Track, with no additional check for carrying iron.
+A trader at the Euphrates crossing occasionally offers a small quantity of iron. You may receive no offers, one offer, or two offers during the entire trading season; two is the maximum, not a guarantee. Each offer counts as soon as it appears, whether you buy or refuse. To refuse, select Iron in the market and click Decline iron offer. A declined offer is gone permanently. Leaving the crossing also ends any unaccepted offer. Each visit produces at most one offer; waiting or reopening the market does not create another. Selling, discarding, or losing iron does not restore an opportunity. You can sell iron at a higher price in Durhumit, but it may travel only on Smuggler’s Track. Sell or discard it before taking a legal road. There is one patrol check per journey on Smuggler’s Track, with no additional check for carrying iron.
 
 ## Wool contracts
 
@@ -77,12 +77,3 @@ Your score is the profit secured in Assur at final accounting. Count the silver 
 ## Saving and classroom play
 
 The game saves after each successful action when browser storage is available. Use Save to download a backup or move your game to another device, then use Import to continue. Saves do not synchronize automatically across devices and can be erased by browser settings. Use one active tab per game. Export the final report for your referee to compare profits. The map shows relative locations and routes; it is not to scale. Save files and the game’s source code can be inspected.
-
-## Road reports
-
-- **The western road:** The shortest road in the network.
-- **The mountain road:** A longer mountain journey. Imports clear customs on arrival in Kaneš.
-- **The northern road:** A legal road between Kaneš and the copper market at Durhumit.
-- **The western uplands:** A westward road between Kaneš and Purušhaddum.
-- **The copper road:** A long road with variable travel time. Rented copper wagons use this route.
-- **Smuggler’s Track:** A direct route between the Euphrates crossing and Durhumit, with a risk of arrest.

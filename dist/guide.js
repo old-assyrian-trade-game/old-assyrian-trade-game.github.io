@@ -54,7 +54,7 @@ export const GUIDE = [
   ],
   [
     "Iron",
-    "A trader at the Euphrates crossing occasionally offers a small quantity of iron. You can sell it at a higher price in Durhumit, but it may travel only on Smuggler’s Track. Sell or discard it before taking a legal road. You may buy iron at most twice during the entire trading season. Each successful purchase counts, even if you later sell, discard, or lose the iron. Declining an offer does not use your allowance. Each visit to the crossing produces at most one offer; waiting or reopening the market does not create another. There is one patrol check per journey on Smuggler’s Track, with no additional check for carrying iron."
+    "A trader at the Euphrates crossing occasionally offers a small quantity of iron. You may receive no offers, one offer, or two offers during the entire trading season; two is the maximum, not a guarantee. Each offer counts as soon as it appears, whether you buy or refuse. To refuse, select Iron in the market and click Decline iron offer. A declined offer is gone permanently. Leaving the crossing also ends any unaccepted offer. Each visit produces at most one offer; waiting or reopening the market does not create another. Selling, discarding, or losing iron does not restore an opportunity. You can sell iron at a higher price in Durhumit, but it may travel only on Smuggler’s Track. Sell or discard it before taking a legal road. There is one patrol check per journey on Smuggler’s Track, with no additional check for carrying iron."
   ],
   [
     "Wool contracts",

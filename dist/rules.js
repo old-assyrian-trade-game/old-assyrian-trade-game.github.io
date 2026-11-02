@@ -109,7 +109,7 @@ export const RULES = {
     ],
     "iron_offer_chance": 0.1,
     "iron_offer_minas": 1,
-    "iron_purchase_limit": 2,
+    "iron_offer_limit": 2,
     "iron_silver_per_mina": 600,
     "iron_markup_base": 0.8,
     "iron_markup_dice": [
@@ -183,7 +183,7 @@ export const RULES = {
       "unit": "mina",
       "step": 1,
       "units_per_donkey": 120,
-      "description": "Occasionally offered at the Euphrates crossing. You may buy iron at most twice per season. It may travel only on Smuggler’s Track."
+      "description": "Occasionally offered at the Euphrates crossing, at most twice per season. Every offer counts, even if declined. It may travel only on Smuggler’s Track."
     }
   },
   "cities": {
@@ -371,6 +371,6 @@ export const RULES = {
       "description": "Bypasses Kaneš and its customs. A patrol can arrest you and end the game."
     }
   ],
-  "version": "2.3.0",
-  "scenario_id": "YATS-WEB-2.3.0"
+  "version": "2.3.1",
+  "scenario_id": "YATS-WEB-2.3.1"
 };
