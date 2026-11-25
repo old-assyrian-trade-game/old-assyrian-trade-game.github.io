@@ -17,7 +17,7 @@
 .grid > *, .market-grid > *{min-width:0}
 @media(max-width:900px){.market-grid,.grid{grid-template-columns:minmax(0,1fr)}.mobile-deadlines{font-size:.65rem;color:#bdcbb5;margin:7px 0 0}.sidebar .mobile-deadlines{display:block}}
 
-@media(max-width:900px){.map .city-label{font-size:32px}.map .map-legend{font-size:21px}.map .river-label{font-size:22px}}
+@media(max-width:900px){.map .city-label{font-size:32px}.map .map-legend{font-size:24px}.map .river-label{font-size:25px}}
 
 .hero .map .city-label{font-size:30px}
 @media(max-width:900px){.hero .map .city-label{font-size:32px}}
